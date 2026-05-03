@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gym-CartPole-bt"
+version = "0.1.0"
+description = "A custom Gymnasium environment for the cart-pole problem with extended control variations"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+dependencies = [
+    "gymnasium>=0.26.0",
+    "numpy>=1.21.0",
+    "scipy>=1.7.0",
+    "pygame>=2.1.0",
+]
+
+[project.urls]
+Repository = "https://github.com/billtubbs/gym-CartPole-bt"

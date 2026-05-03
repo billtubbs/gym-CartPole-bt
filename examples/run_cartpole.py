@@ -8,8 +8,8 @@ env.render()
 history = []
 prior_observation, info = env.reset(seed=42)
 for i in range(100):
-    #action = env.action_space.sample()
-    action = [0]
+    action = env.action_space.sample()
+    print(action)
     observation, reward, terminated, truncated, info = env.step(action)
     history.append((i, prior_observation, action, reward))
     env.render()

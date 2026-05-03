@@ -4,9 +4,6 @@ project maintained by the Farama Foundation.
 
 https://github.com/Farama-Foundation/Gymnasium
 
-
-Modified cart-pole environment for use with OpenAI Gymnaisum.
-
 This version of the classic cart-pole or cart-and-pendulum
 control problem offers more variations on the basic OpenAI
 Gym version (CartPole-v1).
@@ -23,7 +20,7 @@ Features of this version include:
 - Reduced set of measured state variables
 
 The goal of building this environment was to test different
-control engineering and reinfircement learning methods on
+control engineering and reinforcement learning methods on
 a problem that is more challenging than the simple cart-pole
 environment provided by OpenAI but still simple enough to
 understand and use to help us learn about the relative
@@ -450,7 +447,7 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             self.isopen = False
 
 
-class CartPoleVectorEnv(VectorEnv):
+class CartPoleBTVectorEnv(VectorEnv):
     metadata = {
         "render_modes": ["rgb_array"],
         "render_fps": 50,
