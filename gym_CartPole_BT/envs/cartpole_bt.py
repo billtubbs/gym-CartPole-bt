@@ -255,7 +255,6 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
             # Simple state update (Euler method)
             self.state += self.tau * x_dot.astype("float32")
-            output = self.output(self.state)
 
         else:
             # Create a partial function for use by solver
@@ -279,12 +278,13 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 t_eval=[tf],
             )
             self.state = sol.y.reshape(-1).astype("float32")
-            output = self.output(self.state)
 
         # Add disturbance to pendulum angular velocity (theta_dot)
         if self.disturbances is not None:
             v = self.variance_levels[self.disturbances]
             self.state[3] += 0.05 * self.np_random.normal(scale=v)
+
+        output = self.output(self.state)
 
         terminated = bool(
             self.state[0] < -self.x_threshold
@@ -310,16 +310,11 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                     )
                 self.steps_beyond_terminated += 1
 
+        self.time_step += 1
         if self.render_mode == "human":
             self.render()
         # truncation=False as the time limit is handled by the `TimeLimit` wrapper added during `make`
-        return (
-            np.array(self.state, dtype=np.float32),
-            reward,
-            terminated,
-            False,
-            {},
-        )
+        return output, reward, terminated, False, {}
 
     def reset(
         self,
@@ -346,7 +341,7 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         if self.render_mode == "human":
             self.render()
-        return np.array(self.state, dtype=np.float32), {}
+        return self.output(self.state), {}
 
     def render(self):
         if self.render_mode is None:

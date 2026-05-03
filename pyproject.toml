@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["ruff"]
+dev = ["ruff", "pytest>=7.0"]
 
 [project.urls]
 Repository = "https://github.com/billtubbs/gym-CartPole-bt"
