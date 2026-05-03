@@ -22,5 +22,8 @@ dev = ["ruff", "pytest>=7.0"]
 [project.urls]
 Repository = "https://github.com/billtubbs/gym-CartPole-bt"
 
+[tool.setuptools.packages.find]
+include = ["gym_CartPole_BT*"]
+
 [tool.ruff]
 line-length = 79
