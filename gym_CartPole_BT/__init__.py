@@ -2,7 +2,8 @@ import numpy as np
 from gymnasium.envs.registration import register
 
 _p2 = [[1, 0, 0, 0], [0, 0, 1, 0]]  # output matrix: x-position and pole angle only
-_x2 = (-2.0, 0.0, np.pi, 0.0)       # initial state: 2 units left of goal
+_x2_initial = (-1.0, 0.0, np.pi, 0.0)  # initial state: 2 units left of goal
+_x2_goal = (1.0, 0.0, np.pi, 0.0)      # goal state: 1 unit right of centre
 
 # Basic cart-pendulum system (7 variants)
 register(
@@ -84,17 +85,17 @@ register(
     id="CartPole-BT-x2-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
     max_episode_steps=100,
-    kwargs={"initial_state": _x2},
+    kwargs={"goal_state": _x2_goal, "initial_state": _x2_initial},
 )
 register(
     id="CartPole-BT-x2-dL-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
     max_episode_steps=100,
-    kwargs={"initial_state": _x2, "disturbances": "low"},
+    kwargs={"goal_state": _x2_goal, "initial_state": _x2_initial, "disturbances": "low"},
 )
 register(
     id="CartPole-BT-x2-dH-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
     max_episode_steps=100,
-    kwargs={"initial_state": _x2, "disturbances": "high"},
+    kwargs={"goal_state": _x2_goal, "initial_state": _x2_initial, "disturbances": "high"},
 )

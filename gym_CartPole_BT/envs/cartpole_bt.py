@@ -377,7 +377,6 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         world_width = self.length * 2.4
         scale = self.screen_width / world_width
-        carty = 160  # TOP OF CART
         polewidth = 10.0
         polelen = scale * (0.5 * self.length)
         cartwidth = 50.0
@@ -391,15 +390,17 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.surf = pygame.Surface((self.screen_width, self.screen_height))
         self.surf.fill((255, 255, 255))
 
+        axleoffset = cartheight / 4.0
+        cartx = x[0] * scale + self.screen_width / 2.0  # MIDDLE OF CART
+        carty = 100  # TOP OF CART
+        line_top = carty + int(polelen) + 25
+
         l, r, t, b = (
             -cartwidth / 2,
             cartwidth / 2,
             cartheight / 2,
             -cartheight / 2,
         )
-        axleoffset = cartheight / 4.0
-        cartx = x[0] * scale + self.screen_width / 2.0  # MIDDLE OF CART
-        carty = 100  # TOP OF CART
 
         # Draw cart
         cart_coords = [(l, b), (l, t), (r, t), (r, b)]
@@ -417,7 +418,6 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # Draw pole
         pole_coords = []
         for coord in [(l, b), (l, t), (r, t), (r, b)]:
-            # TODO: Fix orientation of pole
             coord = pygame.math.Vector2(coord).rotate_rad(x[2] + np.pi)
             coord = (coord[0] + cartx, coord[1] + carty + axleoffset)
             pole_coords.append(coord)
@@ -443,16 +443,23 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # Draw track
         gfxdraw.hline(self.surf, 0, self.screen_width, carty, (0, 0, 0))
 
+        # Draw goal line
+        goal_x = int(self.goal_state[0] * scale + self.screen_width / 2.0)
+        gfxdraw.vline(self.surf, goal_x, carty, line_top, (0, 0, 0))
+
+        # Draw initial state line (only when displaced from goal)
+        if self.initial_state[0] != self.goal_state[0]:
+            init_x = int(
+                self.initial_state[0] * scale + self.screen_width / 2.0
+            )
+            gfxdraw.vline(self.surf, init_x, carty, line_top, (0, 0, 0))
+
         self.surf = pygame.transform.flip(self.surf, False, True)
         self.screen.blit(self.surf, (0, 0))
         if self.render_mode == "human":
             pygame.event.pump()
             self.clock.tick(self.metadata["render_fps"])
             pygame.display.flip()
-
-        # TODO: Draw goal line
-
-        # TODO: Draw initial state position
 
         elif self.render_mode == "rgb_array":
             return np.transpose(

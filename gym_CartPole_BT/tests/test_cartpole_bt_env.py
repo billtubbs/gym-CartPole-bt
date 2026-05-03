@@ -77,13 +77,12 @@ class TestGymCartPoleBT(unittest.TestCase):
             self.assertEqual(
                 env.unwrapped.output_matrix.dtype, np.dtype("float32")
             )
-            # Note: v1 x2 variant has goal at x=0, initial at x=-2 (vs v0: goal x=1, initial x=-1)
             if "-x2" in name:
                 assert_allclose(
-                    env.unwrapped.initial_state, [-2, 0, np.pi, 0], atol=1e-6
+                    env.unwrapped.initial_state, [-1, 0, np.pi, 0], atol=1e-6
                 )
                 assert_allclose(
-                    env.unwrapped.goal_state, [0, 0, np.pi, 0], atol=1e-6
+                    env.unwrapped.goal_state, [1, 0, np.pi, 0], atol=1e-6
                 )
             else:
                 assert_allclose(

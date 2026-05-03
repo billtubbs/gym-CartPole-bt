@@ -1,10 +1,12 @@
 import gymnasium as gym
-from gym_CartPole_BT.envs.cartpole_bt import CartPoleBTEnv
+import gym_CartPole_BT
 
-env = CartPoleBTEnv(render_mode="human", initial_state_variance="low")
+env = gym.make(
+    "CartPole-BT-v1", render_mode="human", initial_state_variance="high"
+)
 
 history = []
-prior_observation, info = env.reset(seed=42)
+prior_observation, info = env.reset()
 for i in range(100):
     action = [0.0]
     observation, reward, terminated, truncated, info = env.step(action)
