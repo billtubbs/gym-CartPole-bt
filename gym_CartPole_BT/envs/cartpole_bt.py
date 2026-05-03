@@ -44,15 +44,15 @@ from gym_CartPole_BT.systems.cartpend import cartpend_dxdt
 
 
 def angle_normalize(theta):
-    return theta % (2*np.pi)
+    return theta % (2 * np.pi)
 
 
 class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     """
     ## Description
 
-    A pole is attached by an un-actuated joint to a cart, which moves along a 
-    track. The goal is to move the cart and the pole to a goal position and 
+    A pole is attached by an un-actuated joint to a cart, which moves along a
+    track. The goal is to move the cart and the pole to a goal position and
     angle and stabilize it.
 
     ## Action Space
@@ -131,15 +131,15 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     }
 
     def __init__(
-        self, 
-        goal_state=(0.0, 0.0, np.pi, 0.0), 
-        disturbances=None, 
-        initial_state='goal', 
-        initial_state_variance=None, 
-        measurement_error=None, 
-        output_matrix=None, 
-        n_steps=100, 
-        render_mode=None
+        self,
+        goal_state=(0.0, 0.0, np.pi, 0.0),
+        disturbances=None,
+        initial_state="goal",
+        initial_state_variance=None,
+        measurement_error=None,
+        output_matrix=None,
+        n_steps=100,
+        render_mode=None,
     ):  # TODO: Add type annotations
 
         self.goal_state = goal_state
@@ -158,13 +158,13 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.max_force = 200.0  # TODO: What is this for?
 
         # DELETE
-        #self.total_mass = self.masspole + self.masscart
-        #self.polemass_length = self.masspole * self.length
-        #self.force_mag = 10.0
+        # self.total_mass = self.masspole + self.masscart
+        # self.polemass_length = self.masspole * self.length
+        # self.force_mag = 10.0
 
         # Set initial state and goal state
         self.goal_state = np.array(goal_state, dtype=np.float32)
-        if isinstance(initial_state, str) and initial_state == 'goal':
+        if isinstance(initial_state, str) and initial_state == "goal":
             self.initial_state = self.goal_state.copy()
         else:
             self.initial_state = np.array(initial_state, dtype=np.float32)
@@ -177,17 +177,13 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             self.output_matrix = np.eye(4).astype(np.float32)
         else:
             self.output_matrix = np.array(output_matrix).astype(np.float32)
-        self.variance_levels = {
-            None: 0.0,
-            'low': 0.01,
-            'high': 0.2
-        }
+        self.variance_levels = {None: 0.0, "low": 0.01, "high": 0.2}
 
         # Details of simulation
         self.tau = 0.05  # seconds between state updates
         self.n_steps = n_steps
         self.time_step = 0
-        self.kinematics_integrator = 'RK45'
+        self.kinematics_integrator = "RK45"
 
         # Maximum and minimum thresholds for pole angle and cart position
         inf = np.finfo(np.float32).max
@@ -195,21 +191,26 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.x_threshold = inf
 
         # Episode terminates early if these limits are exceeded
-        self.state_bounds = np.array([
-            [-self.x_threshold, self.x_threshold],
-            [-inf, inf],
-            [-self.theta_threshold_radians, self.theta_threshold_radians],
-            [-inf, inf]
-        ])
+        self.state_bounds = np.array(
+            [
+                [-self.x_threshold, self.x_threshold],
+                [-inf, inf],
+                [-self.theta_threshold_radians, self.theta_threshold_radians],
+                [-inf, inf],
+            ]
+        )
 
         # Translate state constraints into output bounds
         output_bounds = self.output_matrix.dot(self.state_bounds)
         low = output_bounds[:, 0].astype(np.float32)
         high = output_bounds[:, 1].astype(np.float32)
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
-        self.action_space = spaces.Box(np.float32(-self.max_force),
-                                       np.float32(self.max_force),
-                                       shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(
+            np.float32(-self.max_force),
+            np.float32(self.max_force),
+            shape=(1,),
+            dtype=np.float32,
+        )
 
         self.render_mode = render_mode
 
@@ -227,48 +228,58 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         the goal state.
         """
 
-        return ((state[0] - self.goal_state[0])**2 +
-                (angle_normalize(state[2]) - self.goal_state[2])**2)
+        return (state[0] - self.goal_state[0]) ** 2 + (
+            angle_normalize(state[2]) - self.goal_state[2]
+        ) ** 2
 
     def output(self, state):
         return self.output_matrix.dot(state)
 
     def step(self, u):
 
-        u = np.clip(u, -self.max_force, self.max_force)[0].astype('float32')
+        u = np.clip(u, -self.max_force, self.max_force)[0].astype("float32")
         x = self.state
         t = self.time_step * self.tau
 
-        if self.kinematics_integrator == 'Euler':
+        if self.kinematics_integrator == "Euler":
             # Calculate time derivative
-            x_dot = cartpend_dxdt(t, x,
-                                  m=self.masspole,
-                                  M=self.masscart,
-                                  L=self.length,
-                                  g=self.gravity,
-                                  d=self.friction,
-                                  u=u)
+            x_dot = cartpend_dxdt(
+                t,
+                x,
+                m=self.masspole,
+                M=self.masscart,
+                L=self.length,
+                g=self.gravity,
+                d=self.friction,
+                u=u,
+            )
 
             # Simple state update (Euler method)
-            self.state += self.tau * x_dot.astype('float32')
+            self.state += self.tau * x_dot.astype("float32")
             output = self.output(self.state)
 
         else:
             # Create a partial function for use by solver
-            f = partial(cartpend_dxdt,
-                        m=self.masspole,
-                        M=self.masscart,
-                        L=self.length,
-                        g=self.gravity,
-                        d=self.friction,
-                        u=u)
+            f = partial(
+                cartpend_dxdt,
+                m=self.masspole,
+                M=self.masscart,
+                L=self.length,
+                g=self.gravity,
+                d=self.friction,
+                u=u,
+            )
 
             # Integrate using numerical solver
             tf = t + self.tau
-            sol = solve_ivp(f, t_span=[t, tf], y0=x,
-                            method=self.kinematics_integrator, 
-                            t_eval=[tf])
-            self.state = sol.y.reshape(-1).astype('float32')
+            sol = solve_ivp(
+                f,
+                t_span=[t, tf],
+                y0=x,
+                method=self.kinematics_integrator,
+                t_eval=[tf],
+            )
+            self.state = sol.y.reshape(-1).astype("float32")
             output = self.output(self.state)
 
         # Add disturbance to pendulum angular velocity (theta_dot)
@@ -303,7 +314,13 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if self.render_mode == "human":
             self.render()
         # truncation=False as the time limit is handled by the `TimeLimit` wrapper added during `make`
-        return np.array(self.state, dtype=np.float32), reward, terminated, False, {}
+        return (
+            np.array(self.state, dtype=np.float32),
+            reward,
+            terminated,
+            False,
+            {},
+        )
 
     def reset(
         self,
@@ -315,7 +332,9 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # Note that if you use custom reset bounds, it may lead to out-of-bound
         # state/observations.
         low, high = utils.maybe_parse_reset_bounds(
-            options, -0.05, 0.05  # default low
+            options,
+            -0.05,
+            0.05,  # default low
         )  # default high
         self.state = self.np_random.uniform(low=low, high=high, size=(4,))
         self.steps_beyond_terminated = None
@@ -350,13 +369,15 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                     (self.screen_width, self.screen_height)
                 )
             else:  # mode == "rgb_array"
-                self.screen = pygame.Surface((self.screen_width, self.screen_height))
+                self.screen = pygame.Surface(
+                    (self.screen_width, self.screen_height)
+                )
         if self.clock is None:
             self.clock = pygame.time.Clock()
 
         world_width = self.length * 2.4
         scale = self.screen_width / world_width
-        carty = 160 # TOP OF CART
+        carty = 160  # TOP OF CART
         polewidth = 10.0
         polelen = scale * (0.5 * self.length)
         cartwidth = 50.0
@@ -371,10 +392,10 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.surf.fill((255, 255, 255))
 
         l, r, t, b = (
-            -cartwidth/2, 
-            cartwidth/2, 
-            cartheight/2,
-            -cartheight/2
+            -cartwidth / 2,
+            cartwidth / 2,
+            cartheight / 2,
+            -cartheight / 2,
         )
         axleoffset = cartheight / 4.0
         cartx = x[0] * scale + self.screen_width / 2.0  # MIDDLE OF CART
@@ -397,7 +418,9 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         pole_coords = []
         for coord in [(l, b), (l, t), (r, t), (r, b)]:
             # TODO: Fix orientation of pole
-            coord = pygame.math.Vector2(coord).rotate_rad(-x[2])  # -x[2] or x[2] + np.pi
+            coord = pygame.math.Vector2(coord).rotate_rad(
+                -x[2]
+            )  # -x[2] or x[2] + np.pi
             coord = (coord[0] + cartx, coord[1] + carty + axleoffset)
             pole_coords.append(coord)
         gfxdraw.aapolygon(self.surf, pole_coords, (202, 152, 101))
@@ -435,7 +458,8 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         elif self.render_mode == "rgb_array":
             return np.transpose(
-                np.array(pygame.surfarray.pixels3d(self.screen)), axes=(1, 0, 2)
+                np.array(pygame.surfarray.pixels3d(self.screen)),
+                axes=(1, 0, 2),
             )
 
     def close(self):
@@ -457,7 +481,7 @@ class CartPoleBTVectorEnv(VectorEnv):
         self,
         num_envs: int = 1,
         max_episode_steps: int = 500,
-        render_mode: Optional[str] = None
+        render_mode: Optional[str] = None,
     ):
 
         self.num_envs = num_envs
@@ -500,8 +524,12 @@ class CartPoleBTVectorEnv(VectorEnv):
 
         self.single_action_space = spaces.Discrete(2)
         self.action_space = batch_space(self.single_action_space, num_envs)
-        self.single_observation_space = spaces.Box(-high, high, dtype=np.float32)
-        self.observation_space = batch_space(self.single_observation_space, num_envs)
+        self.single_observation_space = spaces.Box(
+            -high, high, dtype=np.float32
+        )
+        self.observation_space = batch_space(
+            self.single_observation_space, num_envs
+        )
 
         self.screen_width = 600
         self.screen_height = 400
@@ -513,9 +541,9 @@ class CartPoleBTVectorEnv(VectorEnv):
     def step(
         self, action: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict]:
-        assert self.action_space.contains(
-            action
-        ), f"{action!r} ({type(action)}) invalid"
+        assert self.action_space.contains(action), (
+            f"{action!r} ({type(action)}) invalid"
+        )
         assert self.state is not None, "Call reset before using step method."
 
         x, x_dot, theta, theta_dot = self.state
@@ -529,9 +557,12 @@ class CartPoleBTVectorEnv(VectorEnv):
             force + self.polemass_length * theta_dot**2 * sintheta
         ) / self.total_mass
         thetaacc = (self.gravity * sintheta - costheta * temp) / (
-            self.length * (4.0 / 3.0 - self.masspole * costheta**2 / self.total_mass)
+            self.length
+            * (4.0 / 3.0 - self.masspole * costheta**2 / self.total_mass)
         )
-        xacc = temp - self.polemass_length * thetaacc * costheta / self.total_mass
+        xacc = (
+            temp - self.polemass_length * thetaacc * costheta / self.total_mass
+        )
 
         if self.kinematics_integrator == "euler":
             x = x + self.tau * x_dot
@@ -571,7 +602,13 @@ class CartPoleBTVectorEnv(VectorEnv):
 
         self.prev_done = terminated | truncated
 
-        return self.state.T.astype(np.float32), reward, terminated, truncated, {}
+        return (
+            self.state.T.astype(np.float32),
+            reward,
+            terminated,
+            truncated,
+            {},
+        )
 
     def reset(
         self,
@@ -585,7 +622,9 @@ class CartPoleBTVectorEnv(VectorEnv):
 
         # Add random variance to initial state
         v = self.variance_levels[self.initial_state_variance]
-        self.state += self.np_random.normal(scale=v, size=(4, )).astype('float32')
+        self.state += self.np_random.normal(scale=v, size=(4,)).astype(
+            "float32"
+        )
 
         output = self.output(self.state)
 
@@ -624,7 +663,7 @@ class CartPoleBTVectorEnv(VectorEnv):
 
         world_width = self.length * 2.4
         scale = self.screen_width / world_width
-        carty = 160 # TOP OF CART
+        carty = 160  # TOP OF CART
         polewidth = 10.0
         polelen = scale * (0.5 * self.length)
         cartwidth = 50.0
@@ -642,10 +681,10 @@ class CartPoleBTVectorEnv(VectorEnv):
             self.surf.fill((255, 255, 255))
 
             l, r, t, b = (
-                -cartwidth/2, 
-                cartwidth/2, 
-                cartheight/2,
-                -cartheight/2
+                -cartwidth / 2,
+                cartwidth / 2,
+                cartheight / 2,
+                -cartheight / 2,
             )
             axleoffset = cartheight / 4.0
             cartx = x[0] * scale + self.screen_width / 2.0  # MIDDLE OF CART
@@ -658,16 +697,18 @@ class CartPoleBTVectorEnv(VectorEnv):
             gfxdraw.filled_polygon(self.surf, cart_coords, (0, 0, 0))
 
             l, r, t, b = (
-                -polewidth/2, 
-                polewidth/2, 
-                polelen - polewidth/2,
-                -polewidth/2
+                -polewidth / 2,
+                polewidth / 2,
+                polelen - polewidth / 2,
+                -polewidth / 2,
             )
 
             # Draw pole
             pole_coords = []
             for coord in [(l, b), (l, t), (r, t), (r, b)]:
-                coord = pygame.math.Vector2(coord).rotate_rad(-x[2])  # -x[2] or x[2] + np.pi
+                coord = pygame.math.Vector2(coord).rotate_rad(
+                    -x[2]
+                )  # -x[2] or x[2] + np.pi
                 coord = (coord[0] + cartx, coord[1] + carty + axleoffset)
                 pole_coords.append(coord)
             gfxdraw.aapolygon(self.surf, pole_coords, (202, 152, 101))
@@ -692,15 +733,17 @@ class CartPoleBTVectorEnv(VectorEnv):
             # Draw track
             gfxdraw.hline(self.surf, 0, self.screen_width, carty, (0, 0, 0))
 
-        # TODO: Draw goal line
+            # TODO: Draw goal line
 
-        # TODO: Draw initial state position
+            # TODO: Draw initial state position
 
             self.surf = pygame.transform.flip(self.surf, False, True)
             screen.blit(self.surf, (0, 0))
 
         return [
-            np.transpose(np.array(pygame.surfarray.pixels3d(screen)), axes=(1, 0, 2))
+            np.transpose(
+                np.array(pygame.surfarray.pixels3d(screen)), axes=(1, 0, 2)
+            )
             for screen in self.screens
         ]
 

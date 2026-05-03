@@ -40,7 +40,7 @@ def cartpend_dxdt(t, x, m=1, M=5, L=2, g=-10, d=1, u=0):
     cos_x = math.cos(x[2])
     mL = m * L
     D = 1 / (L * (M + m * (1 - cos_x**2)))
-    b = mL * x[3]**2 * sin_x - d * x[1] + u
+    b = mL * x[3] ** 2 * sin_x - d * x[1] + u
     dx = np.zeros(4)
 
     # Non-linear ordinary differential equations describing
@@ -80,19 +80,16 @@ def cartpend_ss(m=1, M=5, L=2, g=-10, d=1, s=1):
             of the linearized system.
     """
 
-    A = np.array([
-        [       0.,         1.,               0.,       0.],
-        [       0,        -d/M,           -m*g/M,       0.],
-        [       0.,         0.,               0.,       1.],
-        [       0., -s*d/(M*L), -s*(m+M)*g/(M*L),       0.]
-    ])
+    A = np.array(
+        [
+            [0.0, 1.0, 0.0, 0.0],
+            [0, -d / M, -m * g / M, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+            [0.0, -s * d / (M * L), -s * (m + M) * g / (M * L), 0.0],
+        ]
+    )
 
-    B = np.array([
-        [         0.],
-        [       1./M],
-        [         0.],
-        [ s*1./(M*L)]
-    ])
+    B = np.array([[0.0], [1.0 / M], [0.0], [s * 1.0 / (M * L)]])
 
     return A, B
 

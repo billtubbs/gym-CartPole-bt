@@ -1,6 +1,7 @@
 import gymnasium as gym
 from gym_CartPole_BT.envs.cartpole_bt import CartPoleBTEnv
-env_config = {'render_mode': 'human'}
+
+env_config = {"render_mode": "human"}
 env = CartPoleBTEnv(**env_config)
 
 env.render()
