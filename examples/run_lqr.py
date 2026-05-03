@@ -7,13 +7,18 @@ import gymnasium as gym
 import gym_CartPole_BT
 
 # Parse any arguments provided at the command-line
-parser = argparse.ArgumentParser(description='Test this gym environment.')
-parser.add_argument('-e', '--env', type=str, default='CartPole-BT-dL-v1',
-                    help="gym environment")
-parser.add_argument('-s', "--show", help="display output",
-                    action="store_true")
-parser.add_argument('-r', "--render", help="render animation",
-                    action="store_true")
+parser = argparse.ArgumentParser(description="Test this gym environment.")
+parser.add_argument(
+    "-e",
+    "--env",
+    type=str,
+    default="CartPole-BT-dL-v1",
+    help="gym environment",
+)
+parser.add_argument("-s", "--show", help="display output", action="store_true")
+parser.add_argument(
+    "-r", "--render", help="render animation", action="store_true"
+)
 args = parser.parse_args()
 
 # Create and initialize environment
@@ -37,13 +42,13 @@ if args.show:
     print("-" * 28)
 
 # Gain matrix (K) for optimal control
-# (Calculated using lqr function with Q=np.eye(4), and R=0.0001)
+# (Calculated using control.lqr with Q=np.eye(4), R=0.0001)
+# See https://python-control.readthedocs.io/en/latest/generated/control.lqr.html
 gain = np.array([-100.00, -197.54, 1491.28, 668.44])
 
 # Run one episode
 terminated = truncated = False
 while not (terminated or truncated):
-
     # Linear quadratic regulator: u[t] = -K(x[t] - x_goal)
     u[:] = -np.dot(gain, env.unwrapped.state - env.unwrapped.goal_state)
 
@@ -55,8 +60,10 @@ while not (terminated or truncated):
 
     # Print updates
     if args.show:
-        print(f"{env.unwrapped.time_step:3d}: {u[0]:5.1f} {reward:6.2f} "
-              f"{cum_reward:10.1f}")
+        print(
+            f"{env.unwrapped.time_step:3d}: {u[0]:5.1f} {reward:6.2f} "
+            f"{cum_reward:10.1f}"
+        )
 
 if args.render:
     input("Press enter to close animation window")
