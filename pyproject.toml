@@ -16,5 +16,11 @@ dependencies = [
     "pygame>=2.1.0",
 ]
 
+[project.optional-dependencies]
+dev = ["ruff"]
+
 [project.urls]
 Repository = "https://github.com/billtubbs/gym-CartPole-bt"
+
+[tool.ruff]
+line-length = 79
