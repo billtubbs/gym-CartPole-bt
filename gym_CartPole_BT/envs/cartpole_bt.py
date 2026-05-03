@@ -127,7 +127,7 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
     metadata = {
         "render_modes": ["human", "rgb_array"],
-        "render_fps": 50,
+        "render_fps": 20,
     }
 
     def __init__(
@@ -138,7 +138,6 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         initial_state_variance=None,
         measurement_error=None,
         output_matrix=None,
-        n_steps=100,
         render_mode=None,
     ):  # TODO: Add type annotations
 
@@ -148,9 +147,8 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.initial_state_variance = initial_state_variance
         self.measurement_error = measurement_error
         self.output_matrix = output_matrix
-        self.n_steps = n_steps
 
-        self.gravity = 10.0  # TODO: Note sign change
+        self.gravity = -10.0
         self.masscart = 5.0
         self.masspole = 1.0
         self.length = 2.0
@@ -181,7 +179,6 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         # Details of simulation
         self.tau = 0.05  # seconds between state updates
-        self.n_steps = n_steps
         self.time_step = 0
         self.kinematics_integrator = "RK45"
 
@@ -237,7 +234,9 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
     def step(self, u):
 
-        u = np.clip(u, -self.max_force, self.max_force)[0].astype("float32")
+        u = np.clip(np.atleast_1d(u), -self.max_force, self.max_force)[
+            0
+        ].astype("float32")
         x = self.state
         t = self.time_step * self.tau
 
@@ -329,14 +328,20 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         options: Optional[dict] = None,
     ):
         super().reset(seed=seed)
-        # Note that if you use custom reset bounds, it may lead to out-of-bound
-        # state/observations.
-        low, high = utils.maybe_parse_reset_bounds(
-            options,
-            -0.05,
-            0.05,  # default low
-        )  # default high
-        self.state = self.np_random.uniform(low=low, high=high, size=(4,))
+        if options is not None and ("low" in options or "high" in options):
+            low, high = utils.maybe_parse_reset_bounds(options, -0.05, 0.05)
+            self.state = self.np_random.uniform(
+                low=low, high=high, size=(4,)
+            ).astype(np.float32)
+        else:
+            self.state = self.initial_state.copy()
+            v = self.variance_levels[self.initial_state_variance]
+            if v > 0.0:
+                self.state += self.np_random.normal(scale=v, size=(4,)).astype(
+                    np.float32
+                )
+
+        self.time_step = 0
         self.steps_beyond_terminated = None
 
         if self.render_mode == "human":
@@ -418,9 +423,7 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         pole_coords = []
         for coord in [(l, b), (l, t), (r, t), (r, b)]:
             # TODO: Fix orientation of pole
-            coord = pygame.math.Vector2(coord).rotate_rad(
-                -x[2]
-            )  # -x[2] or x[2] + np.pi
+            coord = pygame.math.Vector2(coord).rotate_rad(x[2] + np.pi)
             coord = (coord[0] + cartx, coord[1] + carty + axleoffset)
             pole_coords.append(coord)
         gfxdraw.aapolygon(self.surf, pole_coords, (202, 152, 101))
@@ -706,9 +709,7 @@ class CartPoleBTVectorEnv(VectorEnv):
             # Draw pole
             pole_coords = []
             for coord in [(l, b), (l, t), (r, t), (r, b)]:
-                coord = pygame.math.Vector2(coord).rotate_rad(
-                    -x[2]
-                )  # -x[2] or x[2] + np.pi
+                coord = pygame.math.Vector2(coord).rotate_rad(x[2] + np.pi)
                 coord = (coord[0] + cartx, coord[1] + carty + axleoffset)
                 pole_coords.append(coord)
             gfxdraw.aapolygon(self.surf, pole_coords, (202, 152, 101))
