@@ -2,16 +2,17 @@
 
 A modified version of the [cart-pole Gymnasium environment](https://gymnasium.farama.org/environments/classic_control/cart_pole/) for testing different controllers and reinforcement learning algorithms.
 
-This is the updated version of [gym-CartPole-bt-v0](https://github.com/billtubbs/gym-CartPole-bt-v0), rewritten for the modern [Gymnasium API](https://gymnasium.farama.org) maintained by the Farama Foundation.
+This is the updated version of [gym-CartPole-bt-v0](https://github.com/billtubbs/gym-CartPole-bt-v0), rewritten for the modern [Gymnasium API](https://gymnasium.farama.org).
 
 It is based on a MATLAB implementation by [Steven L. Brunton](https://www.me.washington.edu/facultyfinder/steve-brunton) as part of his [Control Bootcamp](https://youtu.be/qjhAAQexzLg) series of videos on YouTube.
 
 Features of this set of environments include:
 - More challenging control objectives such as stabilizing the cart x-position as well as the pendulum angle, and moving the cart-pendulum horizontally from one point to another
-- Continuously varying control actions
+- Continuous (real-valued) control actions
 - Random initial states
-- Random state disturbance
+- Random disturbances
 - Partially-observable states
+- No episode termination when cart or pendulum move too far from the target
 
 <IMG SRC="images/screenshot1.png" WIDTH=600 ALT="Screenshot of cart-pole environment in action">
 
