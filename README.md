@@ -12,6 +12,7 @@ Features of this set of environments include:
 - Random initial states
 - Random disturbances
 - Partially-observable states
+- Random measurement noise on observations
 - No episode termination when cart or pendulum move too far from the target
 
 <IMG SRC="images/screenshot1.png" WIDTH=600 ALT="Screenshot of cart-pole environment in action">
@@ -48,7 +49,7 @@ env.close()
 
 ## Environments
 
-There are 15 variations of the basic environment. Select an id from the tables below and pass it to `gym.make()`.
+There are 21 variations of the basic environment. Select an id from the tables below and pass it to `gym.make()`.
 
 ### Basic cart-pendulum system
 
@@ -63,6 +64,8 @@ The goal, starting in or near the vertical-up position, is to maintain the cart 
 |  5 | `'CartPole-BT-vH-v1'`      | ...with high variance in initial state                                   |
 |  6 | `'CartPole-BT-dL-vL-v1'`   | ...with low random disturbance and low variance in initial state         |
 |  7 | `'CartPole-BT-dH-vH-v1'`   | ...with high random disturbance and high variance in initial state       |
+|  8 | `'CartPole-BT-dL-nL-v1'`   | ...with low random disturbance and low measurement noise                 |
+|  9 | `'CartPole-BT-dL-nH-v1'`   | ...with low random disturbance and high measurement noise                |
 
 ### Variant 1 — Partially observable state
 
@@ -75,6 +78,8 @@ Only the cart x-position and pole angle are observed each timestep (2 of 4 state
 |  3 | `'CartPole-BT-p2-dH-v1'`   | ...and high random disturbance                                           |
 |  4 | `'CartPole-BT-p2-vL-v1'`   | ...and low variance in initial state                                     |
 |  5 | `'CartPole-BT-p2-vH-v1'`   | ...and high variance in initial state                                    |
+|  6 | `'CartPole-BT-p2-dL-nL-v1'`| ...and low random disturbance and low measurement noise                  |
+|  7 | `'CartPole-BT-p2-dL-nH-v1'`| ...and low random disturbance and high measurement noise                 |
 
 ### Variant 2 — Initial state displaced from goal
 
@@ -87,6 +92,8 @@ The pendulum starts 2 units to the left of the goal x-position. The objective is
 |  1 | `'CartPole-BT-x2-v1'`      | Cart-pendulum with initial x-position 2 units left of goal              |
 |  2 | `'CartPole-BT-x2-dL-v1'`   | ...and low random disturbance                                            |
 |  3 | `'CartPole-BT-x2-dH-v1'`   | ...and high random disturbance                                           |
+|  4 | `'CartPole-BT-x2-dL-nL-v1'`| ...and low random disturbance and low measurement noise                  |
+|  5 | `'CartPole-BT-x2-dL-nH-v1'`| ...and low random disturbance and high measurement noise                 |
 
 ## Basic simulation (without graphics)
 
