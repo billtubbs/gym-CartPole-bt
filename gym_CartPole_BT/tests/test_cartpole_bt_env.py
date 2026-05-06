@@ -216,27 +216,27 @@ class TestGymCartPoleBT(unittest.TestCase):
             self.assertFalse(np.array_equal(y1, y2))
 
     def test_measurement_noise(self):
-        """Check measurement_noise sigmas are stored correctly."""
-        nL = [0.01, 0.03, np.radians(1.0), np.radians(0.6)]
-        nH = [0.05, 0.15, np.radians(5.0), np.radians(3.0)]
-        p2_nL = [0.01, np.radians(1.0)]
-        p2_nH = [0.05, np.radians(5.0)]
+        """Check measurement_noise level and noise_levels dict."""
+        nL_sigma = [0.01, 0.03, np.radians(1.0), np.radians(0.6)]
+        nH_sigma = [0.05, 0.15, np.radians(5.0), np.radians(3.0)]
         cases = [
-            ("CartPole-BT-dL-nL-v1",    nL),
-            ("CartPole-BT-dL-nH-v1",    nH),
-            ("CartPole-BT-p2-dL-nL-v1", p2_nL),
-            ("CartPole-BT-p2-dL-nH-v1", p2_nH),
-            ("CartPole-BT-x2-dL-nL-v1", nL),
-            ("CartPole-BT-x2-dL-nH-v1", nH),
+            ("CartPole-BT-dL-nL-v1",    "low"),
+            ("CartPole-BT-dL-nH-v1",    "high"),
+            ("CartPole-BT-p2-dL-nL-v1", "low"),
+            ("CartPole-BT-p2-dL-nH-v1", "high"),
+            ("CartPole-BT-x2-dL-nL-v1", "low"),
+            ("CartPole-BT-x2-dL-nH-v1", "high"),
         ]
-        for name, expected in cases:
+        for name, expected_level in cases:
             env = gym.make(name)
+            self.assertEqual(env.unwrapped.measurement_noise, expected_level)
             assert_allclose(
-                env.unwrapped.measurement_noise, expected, rtol=1e-6
+                env.unwrapped.noise_levels["low"], nL_sigma, rtol=1e-6
             )
-            self.assertEqual(
-                env.unwrapped.measurement_noise.dtype, np.dtype("float32")
+            assert_allclose(
+                env.unwrapped.noise_levels["high"], nH_sigma, rtol=1e-6
             )
+            self.assertIsNone(env.unwrapped.noise_levels[None])
             env.close()
 
     def test_measurement_bias(self):

@@ -171,10 +171,7 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # Other features
         self.disturbances = disturbances
         self.initial_state_variance = initial_state_variance
-        if measurement_noise is not None:
-            self.measurement_noise = np.array(measurement_noise, dtype=np.float32)
-        else:
-            self.measurement_noise = None
+        self.measurement_noise = measurement_noise
         if measurement_bias is not None:
             self.measurement_bias = np.array(measurement_bias, dtype=np.float32)
         else:
@@ -184,6 +181,17 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         else:
             self.output_matrix = np.array(output_matrix).astype(np.float32)
         self.variance_levels = {None: 0.0, "low": 0.01, "high": 0.2}
+        self.noise_levels = {
+            None: None,
+            "low": np.array(
+                [0.01, 0.03, np.radians(1.0), np.radians(0.6)],
+                dtype=np.float32,
+            ),
+            "high": np.array(
+                [0.05, 0.15, np.radians(5.0), np.radians(3.0)],
+                dtype=np.float32,
+            ),
+        }
 
         # Details of simulation
         self.tau = 0.05  # seconds between state updates
@@ -296,8 +304,12 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if self.measurement_bias is not None:
             output = output + self.measurement_bias
         if self.measurement_noise is not None:
+            full_sigma = self.noise_levels[self.measurement_noise]
+            out_sigma = np.sqrt(
+                (self.output_matrix ** 2) @ (full_sigma ** 2)
+            )
             output = (output + self.np_random.normal(
-                scale=self.measurement_noise, size=output.shape
+                scale=out_sigma
             )).astype(np.float32)
 
         terminated = bool(
@@ -359,8 +371,12 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if self.measurement_bias is not None:
             obs = obs + self.measurement_bias
         if self.measurement_noise is not None:
+            full_sigma = self.noise_levels[self.measurement_noise]
+            out_sigma = np.sqrt(
+                (self.output_matrix ** 2) @ (full_sigma ** 2)
+            )
             obs = (obs + self.np_random.normal(
-                scale=self.measurement_noise, size=obs.shape
+                scale=out_sigma
             )).astype(np.float32)
         return obs, {}
 
