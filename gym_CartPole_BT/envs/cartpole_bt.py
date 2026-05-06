@@ -136,7 +136,8 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         disturbances=None,
         initial_state="goal",
         initial_state_variance=None,
-        measurement_error=None,
+        measurement_noise=None,
+        measurement_bias=None,
         output_matrix=None,
         render_mode=None,
     ):  # TODO: Add type annotations
@@ -145,7 +146,7 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.disturbances = disturbances
         self.initial_state = initial_state
         self.initial_state_variance = initial_state_variance
-        self.measurement_error = measurement_error
+        self.measurement_noise = measurement_noise
         self.output_matrix = output_matrix
 
         self.gravity = -10.0
@@ -170,7 +171,14 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # Other features
         self.disturbances = disturbances
         self.initial_state_variance = initial_state_variance
-        self.measurement_error = measurement_error
+        if measurement_noise is not None:
+            self.measurement_noise = np.array(measurement_noise, dtype=np.float32)
+        else:
+            self.measurement_noise = None
+        if measurement_bias is not None:
+            self.measurement_bias = np.array(measurement_bias, dtype=np.float32)
+        else:
+            self.measurement_bias = None
         if output_matrix is None:
             self.output_matrix = np.eye(4).astype(np.float32)
         else:
@@ -285,6 +293,12 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             self.state[3] += 0.05 * self.np_random.normal(scale=v)
 
         output = self.output(self.state)
+        if self.measurement_bias is not None:
+            output = output + self.measurement_bias
+        if self.measurement_noise is not None:
+            output = (output + self.np_random.normal(
+                scale=self.measurement_noise, size=output.shape
+            )).astype(np.float32)
 
         terminated = bool(
             self.state[0] < -self.x_threshold
@@ -341,7 +355,14 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         if self.render_mode == "human":
             self.render()
-        return self.output(self.state), {}
+        obs = self.output(self.state)
+        if self.measurement_bias is not None:
+            obs = obs + self.measurement_bias
+        if self.measurement_noise is not None:
+            obs = (obs + self.np_random.normal(
+                scale=self.measurement_noise, size=obs.shape
+            )).astype(np.float32)
+        return obs, {}
 
     def render(self):
         if self.render_mode is None:

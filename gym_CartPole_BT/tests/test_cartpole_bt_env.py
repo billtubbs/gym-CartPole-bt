@@ -29,14 +29,20 @@ class TestGymCartPoleBT(unittest.TestCase):
             "CartPole-BT-vH-v1",
             "CartPole-BT-dL-vL-v1",
             "CartPole-BT-dH-vH-v1",
+            "CartPole-BT-dL-nL-v1",
+            "CartPole-BT-dL-nH-v1",
             "CartPole-BT-p2-v1",
             "CartPole-BT-p2-dL-v1",
             "CartPole-BT-p2-dH-v1",
             "CartPole-BT-p2-vL-v1",
             "CartPole-BT-p2-vH-v1",
+            "CartPole-BT-p2-dL-nL-v1",
+            "CartPole-BT-p2-dL-nH-v1",
             "CartPole-BT-x2-v1",
             "CartPole-BT-x2-dL-v1",
             "CartPole-BT-x2-dH-v1",
+            "CartPole-BT-x2-dL-nL-v1",
+            "CartPole-BT-x2-dL-nH-v1",
         ]
         self.assertEqual(len(env_names), len(set(env_names)))
 
@@ -65,7 +71,11 @@ class TestGymCartPoleBT(unittest.TestCase):
                 self.assertEqual(env.unwrapped.initial_state_variance, "high")
             else:
                 self.assertIsNone(env.unwrapped.initial_state_variance)
-            self.assertIsNone(env.unwrapped.measurement_error)
+            if "-nL" in name or "-nH" in name:
+                self.assertIsNotNone(env.unwrapped.measurement_noise)
+            else:
+                self.assertIsNone(env.unwrapped.measurement_noise)
+            self.assertIsNone(env.unwrapped.measurement_bias)
             self.assertEqual(env.action_space.shape, (1,))
             self.assertEqual(len(env.unwrapped.state_bounds), 4)
             if "-p2" in name:
@@ -103,7 +113,8 @@ class TestGymCartPoleBT(unittest.TestCase):
             self.assertEqual(initial_output.shape, env.observation_space.shape)
             self.assertEqual(env.unwrapped.state.shape, (4,))
             self.assertEqual(env.unwrapped.state.dtype, np.dtype("float32"))
-            if "-vL" in name or "-vH" in name:
+            noisy = "-vL" in name or "-vH" in name or "-nL" in name or "-nH" in name
+            if noisy:
                 self.assertFalse(
                     np.array_equal(
                         initial_output,
@@ -137,7 +148,7 @@ class TestGymCartPoleBT(unittest.TestCase):
             # Check environment reset
             output_3, _ = env.reset()
             self.assertEqual(env.unwrapped.time_step, 0)
-            if "-vL" in name or "-vH" in name:
+            if noisy:
                 self.assertFalse(np.isclose(output_3, initial_output).all())
             else:
                 self.assertTrue(
@@ -203,6 +214,54 @@ class TestGymCartPoleBT(unittest.TestCase):
             y1 = data[envs[0]]["Test 1"][2][0]
             y2 = data[envs[1]]["Test 1"][2][0]
             self.assertFalse(np.array_equal(y1, y2))
+
+    def test_measurement_noise(self):
+        """Check measurement_noise sigmas are stored correctly."""
+        nL = [0.01, 0.03, np.radians(1.0), np.radians(0.6)]
+        nH = [0.05, 0.15, np.radians(5.0), np.radians(3.0)]
+        p2_nL = [0.01, np.radians(1.0)]
+        p2_nH = [0.05, np.radians(5.0)]
+        cases = [
+            ("CartPole-BT-dL-nL-v1",    nL),
+            ("CartPole-BT-dL-nH-v1",    nH),
+            ("CartPole-BT-p2-dL-nL-v1", p2_nL),
+            ("CartPole-BT-p2-dL-nH-v1", p2_nH),
+            ("CartPole-BT-x2-dL-nL-v1", nL),
+            ("CartPole-BT-x2-dL-nH-v1", nH),
+        ]
+        for name, expected in cases:
+            env = gym.make(name)
+            assert_allclose(
+                env.unwrapped.measurement_noise, expected, rtol=1e-6
+            )
+            self.assertEqual(
+                env.unwrapped.measurement_noise.dtype, np.dtype("float32")
+            )
+            env.close()
+
+    def test_measurement_bias(self):
+        """Check measurement_bias is applied exactly to observations."""
+        bias = [0.1, -0.05, 0.02, -0.01]
+        bias_arr = np.array(bias, dtype=np.float32)
+        env = gym.make(
+            "CartPole-BT-dL-v1", measurement_bias=bias
+        )
+        assert_allclose(env.unwrapped.measurement_bias, bias)
+        self.assertEqual(
+            env.unwrapped.measurement_bias.dtype, np.dtype("float32")
+        )
+        self.assertIsNone(env.unwrapped.measurement_noise)
+
+        # Bias applied exactly on reset and step (no noise in this env)
+        obs, _ = env.reset(seed=0)
+        true_out = env.unwrapped.output(env.unwrapped.state)
+        assert_allclose(obs, true_out + bias_arr, rtol=1e-6)
+
+        obs, reward, _, _, _ = env.step(np.array([1.0]))
+        true_out = env.unwrapped.output(env.unwrapped.state)
+        assert_allclose(obs, true_out + bias_arr, rtol=1e-6)
+        self.assertIsInstance(float(reward), float)
+        env.close()
 
     def test_cartpend(self):
         """Check calculations in cartpend_dxdt function."""
