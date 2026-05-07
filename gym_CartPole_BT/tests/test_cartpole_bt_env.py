@@ -113,7 +113,12 @@ class TestGymCartPoleBT(unittest.TestCase):
             self.assertEqual(initial_output.shape, env.observation_space.shape)
             self.assertEqual(env.unwrapped.state.shape, (4,))
             self.assertEqual(env.unwrapped.state.dtype, np.dtype("float32"))
-            noisy = "-vL" in name or "-vH" in name or "-nL" in name or "-nH" in name
+            noisy = (
+                "-vL" in name
+                or "-vH" in name
+                or "-nL" in name
+                or "-nH" in name
+            )
             if noisy:
                 self.assertFalse(
                     np.array_equal(
@@ -220,8 +225,8 @@ class TestGymCartPoleBT(unittest.TestCase):
         nL_sigma = [0.01, 0.03, np.radians(1.0), np.radians(0.6)]
         nH_sigma = [0.05, 0.15, np.radians(5.0), np.radians(3.0)]
         cases = [
-            ("CartPole-BT-dL-nL-v1",    "low"),
-            ("CartPole-BT-dL-nH-v1",    "high"),
+            ("CartPole-BT-dL-nL-v1", "low"),
+            ("CartPole-BT-dL-nH-v1", "high"),
             ("CartPole-BT-p2-dL-nL-v1", "low"),
             ("CartPole-BT-p2-dL-nH-v1", "high"),
             ("CartPole-BT-x2-dL-nL-v1", "low"),
@@ -243,9 +248,7 @@ class TestGymCartPoleBT(unittest.TestCase):
         """Check measurement_bias is applied exactly to observations."""
         bias = [0.1, -0.05, 0.02, -0.01]
         bias_arr = np.array(bias, dtype=np.float32)
-        env = gym.make(
-            "CartPole-BT-dL-v1", measurement_bias=bias
-        )
+        env = gym.make("CartPole-BT-dL-v1", measurement_bias=bias)
         assert_allclose(env.unwrapped.measurement_bias, bias)
         self.assertEqual(
             env.unwrapped.measurement_bias.dtype, np.dtype("float32")

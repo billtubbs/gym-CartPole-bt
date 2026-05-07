@@ -173,7 +173,9 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.initial_state_variance = initial_state_variance
         self.measurement_noise = measurement_noise
         if measurement_bias is not None:
-            self.measurement_bias = np.array(measurement_bias, dtype=np.float32)
+            self.measurement_bias = np.array(
+                measurement_bias, dtype=np.float32
+            )
         else:
             self.measurement_bias = None
         if output_matrix is None:
@@ -305,12 +307,10 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             output = output + self.measurement_bias
         if self.measurement_noise is not None:
             full_sigma = self.noise_levels[self.measurement_noise]
-            out_sigma = np.sqrt(
-                (self.output_matrix ** 2) @ (full_sigma ** 2)
+            out_sigma = np.sqrt((self.output_matrix**2) @ (full_sigma**2))
+            output = (output + self.np_random.normal(scale=out_sigma)).astype(
+                np.float32
             )
-            output = (output + self.np_random.normal(
-                scale=out_sigma
-            )).astype(np.float32)
 
         terminated = bool(
             self.state[0] < -self.x_threshold
@@ -372,12 +372,10 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             obs = obs + self.measurement_bias
         if self.measurement_noise is not None:
             full_sigma = self.noise_levels[self.measurement_noise]
-            out_sigma = np.sqrt(
-                (self.output_matrix ** 2) @ (full_sigma ** 2)
+            out_sigma = np.sqrt((self.output_matrix**2) @ (full_sigma**2))
+            obs = (obs + self.np_random.normal(scale=out_sigma)).astype(
+                np.float32
             )
-            obs = (obs + self.np_random.normal(
-                scale=out_sigma
-            )).astype(np.float32)
         return obs, {}
 
     def render(self):
