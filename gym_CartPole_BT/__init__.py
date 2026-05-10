@@ -185,7 +185,7 @@ register(
 register(
     id="CartPole-BT-r2-a1-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
-    max_episode_steps=100,
+    max_episode_steps=200,
     kwargs={
         "goal_state": _a1_goal,
         "initial_state": _a1_initial,
@@ -195,7 +195,7 @@ register(
 register(
     id="CartPole-BT-r2-a1-dL-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
-    max_episode_steps=100,
+    max_episode_steps=200,
     kwargs={
         "goal_state": _a1_goal,
         "initial_state": _a1_initial,
@@ -206,7 +206,7 @@ register(
 register(
     id="CartPole-BT-r2-a1-dH-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
-    max_episode_steps=100,
+    max_episode_steps=200,
     kwargs={
         "goal_state": _a1_goal,
         "initial_state": _a1_initial,
@@ -217,7 +217,7 @@ register(
 register(
     id="CartPole-BT-r2-a1-dL-nL-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
-    max_episode_steps=100,
+    max_episode_steps=200,
     kwargs={
         "goal_state": _a1_goal,
         "initial_state": _a1_initial,
@@ -229,7 +229,7 @@ register(
 register(
     id="CartPole-BT-r2-a1-dL-nH-v1",
     entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
-    max_episode_steps=100,
+    max_episode_steps=200,
     kwargs={
         "goal_state": _a1_goal,
         "initial_state": _a1_initial,
