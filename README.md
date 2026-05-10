@@ -95,6 +95,18 @@ The pendulum starts 2 units to the left of the goal x-position. The objective is
 |  4 | `'CartPole-BT-x2-dL-nL-v1'`| ...and low random disturbance and low measurement noise                  |
 |  5 | `'CartPole-BT-x2-dL-nH-v1'`| ...and low random disturbance and high measurement noise                 |
 
+### Variant 3 — Swing-up task
+
+The pole starts hanging vertically downwards (θ=0) and the objective is to swing it up to the upright position (θ=π) while keeping the cart centred. These environments use the sin-squared reward function (`sinthetasqr_xsqr`) which correctly handles the circular nature of the angle.
+
+| #  | Id                              | Description                                                        |
+| -- | ------------------------------- | ------------------------------------------------------------------ |
+|  1 | `'CartPole-BT-r2-a1-v1'`       | Swing-up from hanging position                                     |
+|  2 | `'CartPole-BT-r2-a1-dL-v1'`    | ...with low random disturbance                                     |
+|  3 | `'CartPole-BT-r2-a1-dH-v1'`    | ...with high random disturbance                                    |
+|  4 | `'CartPole-BT-r2-a1-dL-nL-v1'` | ...with low random disturbance and low measurement noise           |
+|  5 | `'CartPole-BT-r2-a1-dL-nH-v1'` | ...with low random disturbance and high measurement noise          |
+
 ## Basic simulation (without graphics)
 
 ```python
@@ -144,7 +156,7 @@ env.close()
 ## Running tests
 
 ```
-python -m pytest gym_CartPole_BT/tests/
+python -m unittest discover -s gym_CartPole_BT/tests/
 ```
 
 ## Differences from v0

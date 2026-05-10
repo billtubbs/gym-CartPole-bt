@@ -43,6 +43,9 @@ from gymnasium.vector.utils import batch_space
 from gym_CartPole_BT.systems.cartpend import cartpend_dxdt
 
 
+REWARD_FUNCTIONS = ("thetasqr_xsqr", "sinthetasqr_xsqr")
+
+
 def angle_normalize(theta):
     return theta % (2 * np.pi)
 
@@ -139,9 +142,15 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         measurement_noise=None,
         measurement_bias=None,
         output_matrix=None,
+        reward_function="thetasqr_xsqr",
         render_mode=None,
     ):  # TODO: Add type annotations
 
+        if reward_function not in REWARD_FUNCTIONS:
+            raise ValueError(
+                f"reward_function must be one of {REWARD_FUNCTIONS}"
+            )
+        self.reward_function = reward_function
         self.goal_state = goal_state
         self.disturbances = disturbances
         self.initial_state = initial_state
@@ -242,10 +251,13 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         """Evaluates the cost based on the current state y and
         the goal state.
         """
-
-        return (state[0] - self.goal_state[0]) ** 2 + (
-            angle_normalize(state[2]) - self.goal_state[2]
-        ) ** 2
+        x_cost = (state[0] - self.goal_state[0]) ** 2
+        delta_theta = angle_normalize(state[2]) - self.goal_state[2]
+        if self.reward_function == "sinthetasqr_xsqr":
+            theta_cost = 4 * np.sin(delta_theta / 2) ** 2
+        else:
+            theta_cost = delta_theta ** 2
+        return x_cost + theta_cost
 
     def output(self, state):
         return self.output_matrix.dot(state)

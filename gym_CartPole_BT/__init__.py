@@ -7,6 +7,8 @@ _p2 = [
 ]  # output matrix: x-position and pole angle only
 _x2_initial = (-1.0, 0.0, np.pi, 0.0)  # initial state: 2 units left of goal
 _x2_goal = (1.0, 0.0, np.pi, 0.0)  # goal state: 1 unit right of centre
+_a1_initial = (0.0, 0.0, 0.0, 0.0)  # swing-up initial state: pole hanging
+_a1_goal = (0.0, 0.0, np.pi, 0.0)   # swing-up goal state: pole upright
 
 # Basic cart-pendulum system (7 variants)
 register(
@@ -174,6 +176,64 @@ register(
     kwargs={
         "goal_state": _x2_goal,
         "initial_state": _x2_initial,
+        "disturbances": "low",
+        "measurement_noise": "high",
+    },
+)
+
+# Swing-up: pole starts hanging (θ=0), goal is upright (θ=π), sin-sqr reward
+register(
+    id="CartPole-BT-r2-a1-v1",
+    entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
+    max_episode_steps=100,
+    kwargs={
+        "goal_state": _a1_goal,
+        "initial_state": _a1_initial,
+        "reward_function": "sinthetasqr_xsqr",
+    },
+)
+register(
+    id="CartPole-BT-r2-a1-dL-v1",
+    entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
+    max_episode_steps=100,
+    kwargs={
+        "goal_state": _a1_goal,
+        "initial_state": _a1_initial,
+        "reward_function": "sinthetasqr_xsqr",
+        "disturbances": "low",
+    },
+)
+register(
+    id="CartPole-BT-r2-a1-dH-v1",
+    entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
+    max_episode_steps=100,
+    kwargs={
+        "goal_state": _a1_goal,
+        "initial_state": _a1_initial,
+        "reward_function": "sinthetasqr_xsqr",
+        "disturbances": "high",
+    },
+)
+register(
+    id="CartPole-BT-r2-a1-dL-nL-v1",
+    entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
+    max_episode_steps=100,
+    kwargs={
+        "goal_state": _a1_goal,
+        "initial_state": _a1_initial,
+        "reward_function": "sinthetasqr_xsqr",
+        "disturbances": "low",
+        "measurement_noise": "low",
+    },
+)
+register(
+    id="CartPole-BT-r2-a1-dL-nH-v1",
+    entry_point="gym_CartPole_BT.envs.cartpole_bt:CartPoleBTEnv",
+    max_episode_steps=100,
+    kwargs={
+        "goal_state": _a1_goal,
+        "initial_state": _a1_initial,
+        "reward_function": "sinthetasqr_xsqr",
         "disturbances": "low",
         "measurement_noise": "high",
     },

@@ -2,7 +2,7 @@
 Unit tests for custom cart-pole environments.
 
 To run these tests use this at the command line:
-$ python -m pytest gym_CartPole_BT/tests/
+$ python -m unittest discover -s gym_CartPole_BT/tests/
 
 TODO:
 - Test with Euler integration option
@@ -29,8 +29,8 @@ class TestGymCartPoleBT(unittest.TestCase):
             "CartPole-BT-vH-v1",
             "CartPole-BT-dL-vL-v1",
             "CartPole-BT-dH-vH-v1",
-            "CartPole-BT-dL-nL-v1",
-            "CartPole-BT-dL-nH-v1",
+            "CartPole-BT-dL-vL-nL-v1",
+            "CartPole-BT-dL-vL-nH-v1",
             "CartPole-BT-p2-v1",
             "CartPole-BT-p2-dL-v1",
             "CartPole-BT-p2-dH-v1",
@@ -43,6 +43,11 @@ class TestGymCartPoleBT(unittest.TestCase):
             "CartPole-BT-x2-dH-v1",
             "CartPole-BT-x2-dL-nL-v1",
             "CartPole-BT-x2-dL-nH-v1",
+            "CartPole-BT-r2-a1-v1",
+            "CartPole-BT-r2-a1-dL-v1",
+            "CartPole-BT-r2-a1-dH-v1",
+            "CartPole-BT-r2-a1-dL-nL-v1",
+            "CartPole-BT-r2-a1-dL-nH-v1",
         ]
         self.assertEqual(len(env_names), len(set(env_names)))
 
@@ -94,12 +99,27 @@ class TestGymCartPoleBT(unittest.TestCase):
                 assert_allclose(
                     env.unwrapped.goal_state, [1, 0, np.pi, 0], atol=1e-6
                 )
+            elif "-a1" in name:
+                assert_allclose(
+                    env.unwrapped.initial_state, [0, 0, 0, 0], atol=1e-6
+                )
+                assert_allclose(
+                    env.unwrapped.goal_state, [0, 0, np.pi, 0], atol=1e-6
+                )
             else:
                 assert_allclose(
                     env.unwrapped.initial_state, [0, 0, np.pi, 0], atol=1e-6
                 )
                 assert_allclose(
                     env.unwrapped.goal_state, [0, 0, np.pi, 0], atol=1e-6
+                )
+            if "-r2" in name:
+                self.assertEqual(
+                    env.unwrapped.reward_function, "sinthetasqr_xsqr"
+                )
+            else:
+                self.assertEqual(
+                    env.unwrapped.reward_function, "thetasqr_xsqr"
                 )
             self.assertEqual(
                 env.unwrapped.initial_state.dtype, np.dtype("float32")
@@ -170,6 +190,7 @@ class TestGymCartPoleBT(unittest.TestCase):
                 "CartPole-BT-v1",
                 "CartPole-BT-p2-v1",
                 "CartPole-BT-x2-v1",
+                "CartPole-BT-r2-a1-v1",
             ]
             if name in deterministic_envs:
                 self.assertTrue(np.array_equal(output_1r, output_1))
@@ -225,8 +246,8 @@ class TestGymCartPoleBT(unittest.TestCase):
         nL_sigma = [0.01, 0.03, np.radians(1.0), np.radians(0.6)]
         nH_sigma = [0.05, 0.15, np.radians(5.0), np.radians(3.0)]
         cases = [
-            ("CartPole-BT-dL-nL-v1", "low"),
-            ("CartPole-BT-dL-nH-v1", "high"),
+            ("CartPole-BT-dL-vL-nL-v1", "low"),
+            ("CartPole-BT-dL-vL-nH-v1", "high"),
             ("CartPole-BT-p2-dL-nL-v1", "low"),
             ("CartPole-BT-p2-dL-nH-v1", "high"),
             ("CartPole-BT-x2-dL-nL-v1", "low"),
