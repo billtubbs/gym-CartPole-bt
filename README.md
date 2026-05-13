@@ -156,7 +156,7 @@ env.close()
 ## Running tests
 
 ```
-python -m unittest discover -s gym_CartPole_BT/tests/
+pytest gym_CartPole_BT/tests/
 ```
 
 ## Differences from v0
