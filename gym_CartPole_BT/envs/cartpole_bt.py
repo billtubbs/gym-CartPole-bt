@@ -256,7 +256,7 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if self.reward_function == "sinthetasqr_xsqr":
             theta_cost = 4 * np.sin(delta_theta / 2) ** 2
         else:
-            theta_cost = delta_theta ** 2
+            theta_cost = delta_theta**2
         return x_cost + theta_cost
 
     def output(self, state):
@@ -363,8 +363,9 @@ class CartPoleBTEnv(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         super().reset(seed=seed)
         if options is not None and ("low" in options or "high" in options):
             low, high = utils.maybe_parse_reset_bounds(options, -0.05, 0.05)
-            self.state = self.np_random.uniform(
-                low=low, high=high, size=(4,)
+            self.state = (
+                self.initial_state
+                + self.np_random.uniform(low=low, high=high, size=(4,))
             ).astype(np.float32)
         else:
             self.state = self.initial_state.copy()
